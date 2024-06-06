@@ -30,12 +30,13 @@ const CustomActions = ({
         switch (buttonIndex) {
           case 0:
             pickImage();
-            return;
+            break;
           case 1:
             takePhoto();
-            return;
+            break;
           case 2:
             getLocation();
+            break;
           default:
         }
       }
@@ -43,9 +44,9 @@ const CustomActions = ({
   };
 
   const pickImage = async () => {
-    let permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (permission?.granted) {
-      let result = await ImagePicker.launchImageLibraryAsync();
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (permission.granted) {
+      const result = await ImagePicker.launchImageLibraryAsync();
 
       if (!result.cancelled) {
         await uploadAndSendImage(result.assets[0].uri);
@@ -56,9 +57,9 @@ const CustomActions = ({
   };
 
   const takePhoto = async () => {
-    let permission = await ImagePicker.requestCameraPermissionsAsync();
-    if (permission?.granted) {
-      let result = await ImagePicker.launchCameraAsync();
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+    if (permission.granted) {
+      const result = await ImagePicker.launchCameraAsync();
 
       if (!result.cancelled) {
         await uploadAndSendImage(result.assets[0].uri);
@@ -69,13 +70,13 @@ const CustomActions = ({
   };
 
   const getLocation = async () => {
-    let { status } = await Location.requestForegroundPermissionsAsync();
+    const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== "granted") {
       Alert.alert("Permission to access location was denied");
       return;
     }
 
-    let location = await Location.getCurrentPositionAsync({});
+    const location = await Location.getCurrentPositionAsync({});
     if (location) {
       onSend({
         location: {
@@ -89,24 +90,23 @@ const CustomActions = ({
   };
 
   const createBlob = (uri) => {
-    const timestamp = (new Date()).getTime();
-    const imageRef = uri.split("/")[uri.split("/").length - 1];
+    const timestamp = new Date().getTime();
+    const imageRef = uri.split("/").pop();
     return `${userID}-${timestamp}-${imageRef}`;
   };
 
   const uploadAndSendImage = async (imageURI) => {
-    const uniqueRefString = createBlob(imageURI);
-    const imageRef = ref(storage, uniqueRefString);
-    const response = await fetch(imageURI);
-    const blob = await response.blob();
-    uploadBytes(imageRef, blob)
-      .then(async (snapshot) => {
-        const imageURL = await getDownloadURL(snapshot.ref);
-        onSend({ image: imageURL });
-      })
-      .catch((error) => {
-        console.error("Error uploading image: ", error);
-      });
+    try {
+      const uniqueRefString = createBlob(imageURI);
+      const imageRef = ref(storage, uniqueRefString);
+      const response = await fetch(imageURI);
+      const blob = await response.blob();
+      await uploadBytes(imageRef, blob);
+      const imageURL = await getDownloadURL(imageRef);
+      onSend({ image: imageURL });
+    } catch (error) {
+      console.error("Error uploading image: ", error);
+    }
   };
 
   return (

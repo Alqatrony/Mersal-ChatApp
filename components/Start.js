@@ -12,11 +12,13 @@ import {
 } from "react-native";
 import { getAuth, signInAnonymously } from "firebase/auth";
 
+// Import the background image
+const BackgroundImage = require("../assets/Background_Image.png");
+
 const Start = ({ navigation }) => {
   const [username, setUsername] = useState("");
   const [background, setBackground] = useState("");
   const colors = ["#090C08", "#474056", "#8A95A5", "#B9C6AE"];
-  const BackgroundImage = require("../assets/Background_Image.png");
   const auth = getAuth();
 
   const signInUser = () => {
@@ -30,7 +32,7 @@ const Start = ({ navigation }) => {
         Alert.alert("Signed in Successfully");
       })
       .catch((err) => {
-        Alert.alert("Unable to sign in, try later again");
+        Alert.alert("Unable to sign in, try again later");
       });
   };
 
